@@ -1,0 +1,19 @@
+{
+  "name": "MCM_ATM90E32",
+  "keywords": "energy meter, mcmchris, spi, sensor, iot",
+  "description": "Arduino library for energy meters that use the ATM90E32AS IC from Microchip/Atmel | MCMCHRIS edition",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mcmchris/mcm-atm90e32-lib.git"
+  },
+  "version": "0.0.1",
+  "authors": 
+  [
+    {
+      "name": "Christopher Méndez",
+      "url": "https://github.com/mcmchris"
+    }
+  ],
+  "frameworks": "arduino",
+  "platforms": ["espressif8266", "espressif32", "atmelsam", "atmelmegaavr", "atmelavr"]
+}

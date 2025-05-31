@@ -1,0 +1,72 @@
+#######################################
+# MCM_ATM90E32
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+ATM90E32	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin		                KEYWORD2
+
+CalculateVIOffset		    KEYWORD2
+CalculatePowerOffset	    KEYWORD2
+CalibrateVI	                KEYWORD2
+
+GetLineVoltageA	            KEYWORD2
+GetLineVoltageB	            KEYWORD2
+GetLineVoltageC	            KEYWORD2
+
+GetLineCurrentA             KEYWORD2
+GetLineCurrentB	            KEYWORD2
+GetLineCurrentC	            KEYWORD2
+GetLineCurrentN             KEYWORD2
+
+GetActivePowerA			    KEYWORD2
+GetActivePowerB			    KEYWORD2
+GetActivePowerC			    KEYWORD2
+GetTotalActivePower	        KEYWORD2
+
+GetTotalActiveFundPower		KEYWORD2
+GetTotalActiveHarPower		KEYWORD2
+
+GetReactivePowerA			KEYWORD2
+GetReactivePowerB		    KEYWORD2
+GetReactivePowerC		    KEYWORD2
+GetTotalReactivePower	    KEYWORD2
+
+GetApparentPowerA	        KEYWORD2
+GetApparentPowerB	        KEYWORD2
+GetApparentPowerC	        KEYWORD2
+GetTotalApparentPower	    KEYWORD2
+
+GetFrequency                KEYWORD2
+
+GetPowerFactorA             KEYWORD2
+GetPowerFactorB	            KEYWORD2
+GetPowerFactorC	            KEYWORD2
+GetTotalPowerFactor         KEYWORD2
+
+GetPhaseA			        KEYWORD2
+GetPhaseB			        KEYWORD2
+GetPhaseC			        KEYWORD2
+
+GetTemperature	            KEYWORD2
+
+GetValueRegister		    KEYWORD2
+
+GetImportEnergy		        KEYWORD2
+GetImportReactiveEnergy		KEYWORD2
+
+
+#######################################
+# Private Functions (KEYWORD3)
+#######################################
+
+CommEnergyIC 		KEYWORD3
+Read32Register 		KEYWORD3
