@@ -491,7 +491,7 @@ bool GainIsValid(int value)
 void ATM90E32::begin(int pin, unsigned short lineFreq, unsigned short sumMode, unsigned short iagain, unsigned short ibgain, unsigned short icgain, unsigned short ucal, unsigned short icalA, unsigned short icalB, unsigned short icalC)
 {
   _cs = pin;            // SS PIN
-  _lineFreq = lineFreq; // frequency of power
+  _lineFreq = lineFreq; // frequency of grid
   _sumMode = sumMode;   // addition mode of energy
   _iagain = iagain;     // PGA Gain for current channel A
   _ibgain = ibgain;     // PGA Gain for current channel B
