@@ -1,4 +1,4 @@
-#define MODULINO
+//#define MODULINO
 #define HELPER_IMPLEMENTATION
 
 #include "helper.h"
@@ -20,6 +20,7 @@ SimpleTimer Timer2(60000);
 #define FORMAT_SPIFFS_IF_FAILED false
 
 unsigned long previousMillis = 0;
+unsigned long previousMillis2 = 0;
 
 // constants won't change:
 const long interval = 1000;
