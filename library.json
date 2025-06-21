@@ -1,7 +1,7 @@
 {
   "name": "MCM_ATM90E32",
   "keywords": "energy meter, mcmchris, spi, sensor, iot",
-  "description": "Arduino library for energy meters that use the ATM90E32AS IC from Microchip/Atmel | MCMCHRIS edition",
+  "description": "The MCM_ATM90E32 Library simplifies the integration of the ATM90E32AS Energy Meter IC. It provides an easy-to-use interface and API to monitor 3-Phase or Split-Phase electrical systems with Arduino boards",
   "repository": {
     "type": "git",
     "url": "https://github.com/mcmchris/mcm-atm90e32-lib.git"
