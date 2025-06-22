@@ -94,9 +94,9 @@ The MIT License (MIT)
 #define PhiC 0x4C  			// C Line Calibration Angle
 
 /* FUNDAMENTAL/HARMONIC ENERGY CALIBRATION REGISTERS */
-#define	POffsetAF 0x51		// A Fund Power Offset (P)
-#define POffsetBF 0x52		// B Fund Power Offset (P)
-#define	POffsetCF 0x53		// C Fund Power Offset (P)
+#define	PoffsetAF 0x51		// A Fund Power Offset (P)
+#define PoffsetBF 0x52		// B Fund Power Offset (P)
+#define	PoffsetCF 0x53		// C Fund Power Offset (P)
 #define PGainAF	0x54		// A Fund Power Gain (P)
 #define	PGainBF	0x55		// B Fund Power Gain (P)
 #define PGainCF	0x56		// C Fund Power Gain (P)
@@ -266,9 +266,9 @@ class ATM90E32
 		/* Initialization Functions */	
 		void begin(int pin, unsigned short lineFreq, unsigned short sumMode, unsigned short iagain, unsigned short ibgain, unsigned short icgain, unsigned short ucal, unsigned short icalA, unsigned short icalB, unsigned short icalC);
 		
-		double CalculateVIOffset(unsigned short regh_addr, unsigned short regl_addr/*, unsigned short offset_reg*/);
-		double CalculatePowerOffset(unsigned short regh_addr, unsigned short regl_addr/*, unsigned short offset_reg*/);
-		double CalibrateVI(unsigned short reg, unsigned short actualVal);
+		double CalculateVIOffset(unsigned short regh_addr, unsigned short regl_addr, unsigned short offset_reg);
+		double CalculatePowerOffset(unsigned short regh_addr, unsigned short regl_addr, unsigned short offset_reg);
+		double CalibrateVI(unsigned short reg, float actualVal);
 		
 		/* Main Electrical Parameters (GET)*/
 		double GetLineVoltageA();
