@@ -72,15 +72,18 @@ void setup() {
 
 ### Electrical Parameters Methods
 
+#### Voltage
 - `GetLineVoltageA()`: Returns the RMS voltage value of channel A 
 - `GetLineVoltageB()`: Returns the RMS voltage value of channel B 
 - `GetLineVoltageC()`: Returns the RMS voltage value of channel C
 
+#### Current
 - `GetLineCurrentA()`: Returns the RMS current value of channel A
 - `GetLineCurrentB()`: Returns the RMS current value of channel B
 - `GetLineCurrentC()`: Returns the RMS current value of channel C
 - `GetLineCurrentN()`: Returns the RMS current value of Neutral
 
+#### Power
 - `GetActivePowerA()`: Returns the Active Power (W) of channel A
 - `GetActivePowerB()`: Returns the Active Power (W) of channel B
 - `GetActivePowerC()`: Returns the Active Power (W) of channel C
@@ -99,8 +102,10 @@ void setup() {
 - `GetApparentPowerC()`: Returns the Apparent Power (VA) of channel C
 - `GetTotalApparentPower()`: Returns the Apparent Power (VA) of all channels
 
+#### Frequency
 - `GetFrequency()`: Returns the grid frequency (Hz)
 
+#### Power Factor
 - `GetPowerFactorA()`: Returns the Power Factor of channel A
 - `GetPowerFactorB()`: Returns the Power Factor of channel B
 - `GetPowerFactorC()`: Returns the Power Factor of channel C
@@ -110,6 +115,7 @@ void setup() {
 - `GetPhaseB()`: Returns the Phase Angle of channel B
 - `GetPhaseC()`: Returns the Phase Angle of channel C
 
+#### Energy
 - `GetImportEnergy()`: Returns the active energy imported in (Wh)
 - `GetImportReactiveEnergy()`: Returns the reactive energy imported in (VARh)
 - `GetImportApparentEnergy()`: Returns the apparent energy imported in (VAh)
