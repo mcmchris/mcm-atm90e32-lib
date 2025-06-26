@@ -329,7 +329,7 @@ class ATM90E32
 		unsigned short GetMeterStatus1();
 
 		/*Set Offsets*/
-		void setOffset(unsigned short address, unsigned short val);
+		void setVIOffset(unsigned short VoffA, unsigned short VoffB, unsigned short VoffC, unsigned short IoffA, unsigned short IoffB, unsigned short IoffC);
 
 	};
 #endif

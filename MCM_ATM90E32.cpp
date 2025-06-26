@@ -127,10 +127,20 @@ int ATM90E32::Read32Register(signed short regh_addr, signed short regl_addr)
   return (val);
 }
 
-void ATM90E32::setOffset(unsigned short offset_reg, unsigned short val)
+void ATM90E32::setVIOffset(unsigned short VoffA, unsigned short VoffB, unsigned short VoffC, unsigned short IoffA, unsigned short IoffB, unsigned short IoffC)
 {
   CommEnergyIC(WRITE, CfgRegAccEn, 0x55AA); // 7F enable register config access
-  CommEnergyIC(WRITE, offset_reg, (unsigned short)val);
+
+  // Voltage Offset Calibration
+  CommEnergyIC(WRITE, UoffsetA, VoffA);
+  CommEnergyIC(WRITE, UoffsetB, VoffB);
+  CommEnergyIC(WRITE, UoffsetC, VoffC);
+
+  // Current Offset Calibration
+  CommEnergyIC(WRITE, IoffsetA, IoffA);
+  CommEnergyIC(WRITE, IoffsetB, IoffB);
+  CommEnergyIC(WRITE, IoffsetC, IoffC);
+
   CommEnergyIC(WRITE, CfgRegAccEn, 0x0000); // 7F end configuration
 }
 
@@ -203,7 +213,7 @@ double ATM90E32::CalculatePowerOffset(unsigned short regh_addr, unsigned short r
   Serial.print("Reading: ");
   Serial.print(val);
 
-  val = (~val) + 1;  // 2s compliment
+  val = (~val) + 1; // 2s compliment
 
   offset = val; // keep lower 16 bits
 
