@@ -3,7 +3,7 @@
 - Run the program with no Voltage and Current input during the setup() function initial execution.
 This will calibrate the voltage and current offset.
 
-- With a reference voltage and current meter, measure the respective parameters on your bench setup with a known load. 
+- With a reference voltage and current meter, measure the respective parameters on your bench setup with a known load.
 Then, update the VCalibration() and ICalibration() functions respectively.
 
 - Reupload the code to the board with the new parameters off Vcalibration() and ICalibration().
@@ -11,7 +11,7 @@ Then, update the VCalibration() and ICalibration() functions respectively.
 - Press the board user button for 4 seconds to get the calibration parameters to match the real measured values by your
 reference tool.
 
-- Take notes of the calibration parameters and replace the VoltageCal, CT1Cal and CT2Cal variables to use them in the 
+- Take notes of the calibration parameters and replace the VoltageCal, CT1Cal and CT2Cal variables to use them in the
 .begin() function of your final code.
 */
 
@@ -27,14 +27,14 @@ unsigned long previousMillis = 0;
 const long interval = 1000;
 
 /***** CALIBRATION SETTINGS *****/
-/* 
+/*
  * 60 Hz (America) or 50 Hz (rest of the world)
  * Energy Accumulation Method
  */
-unsigned short LineFreq = 60;  //
-unsigned short SumMode = 1;    // 0: Aritmethic Energy Sum, 1: Absolute Energy Sum
+unsigned short LineFreq = 60; //
+unsigned short SumMode = 1;   // 0: Aritmethic Energy Sum, 1: Absolute Energy Sum
 
-/* 
+/*
  * 1x (CTs up to 60mA/720mV)
  * 2x (CTs up to 30mA/360mV)
  * 4x (CTs up to 15mA/180mV)
@@ -44,59 +44,68 @@ unsigned short IBGain = 2;
 unsigned short ICGain = 2;
 
 /*
-* Calibration values obtained with a known load
-*/
+ * Calibration values obtained with a known load
+ */
 unsigned short VoltageCal = 25256; // Value obtained with Calibration Workflow (Update with yours)
-unsigned short CT1Cal = 32303; // Value obtained with Calibration Workflow (Update with yours)
-unsigned short CT2Cal = 32401; // Value obtained with Calibration Workflow (Update with yours)
+unsigned short CT1Cal = 32303;     // Value obtained with Calibration Workflow (Update with yours)
+unsigned short CT2Cal = 32401;     // Value obtained with Calibration Workflow (Update with yours)
 
-const int CS_pin = SS;  // Use default SS pin for unknown Arduino
+const int CS_pin = SS; // Use default SS pin for unknown Arduino
 
-ATM90E32 mcm{};  //initialize the IC class
+ATM90E32 mcm{}; // initialize the IC class
 
 double act_energy_wh, apa_energy_wh;
 
-void setup() {
+void setup()
+{
   // put your setup code here, to run once:
   Serial.begin(115200);
   delay(1000);
-  //while (!Serial)
-  //  ;
+  // while (!Serial)
+  //   ;
 
   pinMode(USR_BTN, INPUT);
   pinMode(LED_MCM, OUTPUT);
 
   Serial.println("Start ATM90E32");
   mcm.begin(CS_pin, LineFreq, SumMode, IAGain, IBGain, ICGain, VoltageCal, CT1Cal, 0, CT2Cal);
+  setVIoffset(64608, 64608, 64608, 64606, 64608, 64606); // Values obtained with VIoffsetCal()
   delay(1000);
-  unsigned short sys0 = mcm.GetSysStatus0();  //EMMState0
+  unsigned short sys0 = mcm.GetSysStatus0(); // EMMState0
 
-  if (sys0 == 65535 || sys0 == 0) {
+  if (sys0 == 65535 || sys0 == 0)
+  {
     Serial.println("Error: Not receiving data from energy meter - check your connections");
-    while (1) {
+    while (1)
+    {
     }
   }
   delay(250);
-  // The Voltage input and the Current Input must be 0 when running the Offset calibration - Grid voltage = 0 and CT sensors not hooked to cables.
-  VIoffsetCal();
-  PowerOffsetCal();
+
+  // The Voltage and Current inputs must be 0 when running the Offset calibration - Grid voltage = 0 and CT sensors not hooked to cables.
   
+  //VIoffsetCal();    // to obtain the offset values to use in setVIoffset()
+  //PowerOffsetCal(); // not necessary, but possible
 }
 
-void loop() {
+void loop()
+{
 
   unsigned long currentMillis = millis();
 
-  if (currentMillis - previousMillis >= interval) {
+  if (currentMillis - previousMillis >= interval)
+  {
     // save the last time you blinked the LED
     previousMillis = currentMillis;
 
-    unsigned short sys0 = mcm.GetSysStatus0();  //EMMState0
+    unsigned short sys0 = mcm.GetSysStatus0(); // EMMState0
 
-    if (sys0 == 65535 || sys0 == 0) {
+    if (sys0 == 65535 || sys0 == 0)
+    {
       Serial.println("Error: Not receiving data from energy meter - check your connections");
-
-    } else {
+    }
+    else
+    {
       float voltage = mcm.GetLineVoltageA();
       Serial.print(voltage, 3);
       Serial.println("[V]");
@@ -156,47 +165,52 @@ void loop() {
   button_handler();
 }
 
-
 /***** BUTTON FUNCTIONS *****/
-/* 
+/*
  * 1s Press: Custom Free Action
- * 4s Press: Reset ESP32 
+ * 4s Press: Reset ESP32
  * 8s Press: Reset Energy Count
  */
 
-void button_handler() {
-  if (digitalRead(USR_BTN) == LOW) {  //Push button pressed
+void button_handler()
+{
+  if (digitalRead(USR_BTN) == LOW)
+  { // Push button pressed
 
     // measures time pressed
     int startTime = millis();
     int elapsedTime = 0;
-    while (digitalRead(USR_BTN) == LOW) {
+    while (digitalRead(USR_BTN) == LOW)
+    {
       elapsedTime = (millis() - startTime) / 1000.0;
     }
 
-    if (elapsedTime >= 8) {  // 8 second press
+    if (elapsedTime >= 8)
+    { // 8 second press
       Serial.println("Reseting the Energy count and clearing Registers");
       delay(200);
       act_energy_wh = 0;
       apa_energy_wh = 0;
-      
-    } else if (elapsedTime >= 4) {  // 4 second press
+    }
+    else if (elapsedTime >= 4)
+    { // 4 second press
       Serial.println("Calibrating Voltage and Current!");
 
-      VCalibration(121.54, 0, 121.54); //Voltage in A, Voltage in B, Voltage in C
+      VCalibration(121.54, 0, 121.54); // Voltage in A, Voltage in B, Voltage in C
       ICalibration(0.4815, 0, 0.4815); // Current in A, Current in B, Current in C
 
       Serial.println("Take notes of the new gain values and replace them on the .begin() function of your final code");
-
-    } else if (elapsedTime >= 1) {  // 1 second press
+    }
+    else if (elapsedTime >= 1)
+    { // 1 second press
       Serial.println("Custom Action Here!");
-
     }
     elapsedTime = 0;
   }
 }
 
-void VIoffsetCal() {
+void VIoffsetCal()
+{
   // Voltage Offset Calibration
   mcm.CalculateVIOffset(UrmsA, UrmsALSB, UoffsetA);
   mcm.CalculateVIOffset(UrmsB, UrmsBLSB, UoffsetB);
@@ -206,7 +220,19 @@ void VIoffsetCal() {
   mcm.CalculateVIOffset(IrmsA, IrmsALSB, IoffsetA);
   mcm.CalculateVIOffset(IrmsB, IrmsBLSB, IoffsetB);
   mcm.CalculateVIOffset(IrmsC, IrmsCLSB, IoffsetC);
+}
 
+void setVIoffset(unsigned short VoffA, unsigned short VoffB, unsigned short VoffC, unsigned short IoffA, unsigned short IoffB, unsigned short IoffC)
+{
+  // Voltage Offset Calibration
+  mcm.setOffset(UoffsetA, VoffA);
+  mcm.setOffset(UoffsetB, VoffB);
+  mcm.setOffset(UoffsetC, VoffC);
+
+  // Current Offset Calibration
+  mcm.setOffset(IoffsetA, IoffA);
+  mcm.setOffset(IoffsetB, IoffB);
+  mcm.setOffset(IoffsetC, IoffC);
 }
 
 /*
@@ -216,9 +242,10 @@ void VIoffsetCal() {
   - VoltC: Enter the real C voltage reference value
   - In the MCM Split-Phase Energy Monitor only A and C are used
 */
-void VCalibration(float VoltA, float VoltB, float VoltC) {
+void VCalibration(float VoltA, float VoltB, float VoltC)
+{
   // Voltage Offset Calibration
-  mcm.CalibrateVI(UrmsA, VoltA); // Voltage Channel A, Actual Reference Voltage 
+  mcm.CalibrateVI(UrmsA, VoltA); // Voltage Channel A, Actual Reference Voltage
   mcm.CalibrateVI(UrmsB, VoltB); // Voltage Channel B, Actual Reference Voltage
   mcm.CalibrateVI(UrmsC, VoltC); // Voltage Channel C, Actual Reference Voltage
   delay(5000);
@@ -231,15 +258,17 @@ void VCalibration(float VoltA, float VoltB, float VoltC) {
   - CurrC: Enter the real C current reference value
   - In the MCM Split-Phase Energy Monitor only A and C are used
 */
-void ICalibration(float CurrA, float CurrB, float CurrC) {
+void ICalibration(float CurrA, float CurrB, float CurrC)
+{
   // Voltage Offset Calibration
-  mcm.CalibrateVI(IrmsA, CurrA); // Voltage Channel A, Actual Reference Voltage 
+  mcm.CalibrateVI(IrmsA, CurrA); // Voltage Channel A, Actual Reference Voltage
   mcm.CalibrateVI(IrmsB, CurrB); // Voltage Channel B, Actual Reference Voltage
   mcm.CalibrateVI(IrmsC, CurrC); // Voltage Channel C, Actual Reference Voltage
   delay(1000);
 }
 
-void PowerOffsetCal(){
+void PowerOffsetCal()
+{
 
   // Power Offset Calibration
   mcm.CalculatePowerOffset(PmeanA, PmeanALSB, PoffsetA);

@@ -127,6 +127,13 @@ int ATM90E32::Read32Register(signed short regh_addr, signed short regl_addr)
   return (val);
 }
 
+void ATM90E32::setOffset(unsigned short offset_reg, unsigned short val)
+{
+  CommEnergyIC(WRITE, CfgRegAccEn, 0x55AA); // 7F enable register config access
+  CommEnergyIC(WRITE, offset_reg, (unsigned short)val);
+  CommEnergyIC(WRITE, CfgRegAccEn, 0x0000); // 7F end configuration
+}
+
 double ATM90E32::CalculateVIOffset(unsigned short regh_addr, unsigned short regl_addr, unsigned short offset_reg)
 {
   // for getting the lower registers of Voltage and Current and calculating the offset
@@ -151,6 +158,8 @@ double ATM90E32::CalculateVIOffset(unsigned short regh_addr, unsigned short regl
 
   val = val_h << 16; // move high register up 16 bits
   val |= val_l;      // concatenate the 2 registers to make 1 32 bit number
+  Serial.print("Reading: ");
+  Serial.print(val);
 
   val = val >> 7;   // right shift 7 bits - lowest 7 get ignored - V & I registers need this
   val = (~val) + 1; // 2s compliment
@@ -158,11 +167,11 @@ double ATM90E32::CalculateVIOffset(unsigned short regh_addr, unsigned short regl
   offset = val; // keep lower 16 bits
 
   CommEnergyIC(WRITE, CfgRegAccEn, 0x55AA); // 7F enable register config access
-  CommEnergyIC(WRITE, offset_reg, (signed short)val);
+  CommEnergyIC(WRITE, offset_reg, offset);
   CommEnergyIC(WRITE, CfgRegAccEn, 0x0000); // 7F end configuration
 
-  Serial.print("Offset configured:");
-  Serial.println(val);
+  Serial.print(", Offset: ");
+  Serial.println(offset);
 
   return uint16_t(offset);
 }
@@ -190,16 +199,20 @@ double ATM90E32::CalculatePowerOffset(unsigned short regh_addr, unsigned short r
 
   val = val_h << 16; // move high register up 16 bits
   val |= val_l;      // concatenate the 2 registers to make 1 32 bit number
+
+  Serial.print("Reading: ");
+  Serial.print(val);
+
   val = (~val) + 1;  // 2s compliment
 
   offset = val; // keep lower 16 bits
 
   CommEnergyIC(WRITE, CfgRegAccEn, 0x55AA); // 7F enable register config access
-  CommEnergyIC(WRITE, offset_reg, (signed short)val);
+  CommEnergyIC(WRITE, offset_reg, offset);
   CommEnergyIC(WRITE, CfgRegAccEn, 0x0000); // 7F end configuration
 
-  Serial.print("Offset configured:");
-  Serial.println(val);
+  Serial.print(", Offset configured:");
+  Serial.println(offset);
 
   return uint16_t(offset);
 }

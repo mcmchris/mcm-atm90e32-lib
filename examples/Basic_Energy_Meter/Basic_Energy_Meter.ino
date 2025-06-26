@@ -51,6 +51,7 @@ void setup() {
 
   Serial.println("Start ATM90E32");
   mcm.begin(CS_pin, LineFreq, SumMode, IAGain, IBGain, ICGain, VoltageCal, CT1Cal, 0, CT2Cal);
+  setVIoffset(64608, 64608, 64608, 64606, 64608, 64606); // Values obtained with VIoffsetCal()
   delay(1000);
   unsigned short sys0 = mcm.GetSysStatus0();  //EMMState0
 
@@ -61,9 +62,6 @@ void setup() {
   }
   delay(250);
 
-  VIoffsetCal();
-  PowerOffsetCal();
-  
 }
 
 void loop() {

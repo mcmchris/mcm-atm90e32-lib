@@ -304,11 +304,12 @@ class ATM90E32
 		double GetPowerFactorB();
 		double GetPowerFactorC();
 		double GetTotalPowerFactor();
-
+		
+		/* Phase Angle*/
 		double GetPhaseA();
 		double GetPhaseB();
 		double GetPhaseC();
-
+		/* Get internal IC temperature*/
 		double GetTemperature();
 
 		/* Gain Parameters (GET)*/
@@ -326,5 +327,9 @@ class ATM90E32
 		unsigned short GetSysStatus1();
 		unsigned short GetMeterStatus0();
 		unsigned short GetMeterStatus1();
+
+		/*Set Offsets*/
+		void setOffset(unsigned short address, unsigned short val);
+
 	};
 #endif
