@@ -66,13 +66,132 @@ void setup() {
 
 ## Summary
 
- Members                                    | Descriptions
---------------------------------------------|------------------------------------------
-| `class` [`ModulinoClass`](#modulinoclass) | The base class for all Modulino components, providing essential functionality and structure for all subsequent Modulino modules.                                  |
-| `class` [`ModulinoButtons`](#modulinobuttons) | Handles the functionality of Modulino Buttons, enabling detection of presses and handling input events.                                                |
-| `class` [`ModulinoBuzzer`](#modulinobuttons) |Handles the functionality of Modulino Buzzer, enabling the sound generation for feedback or alerts.                                                    |
-| `class` [`ModulinoPixels`](#modulinopixels) | Handles the functionality of Modulino Pixels, managing LEDs strip color, status and brightness.                                          |
-| `class` [`ModulinoKnob`](#modulinoknob) | Handles the functionality of Modulino Knob, interfacing with the rotary knob position.                                                     |
-| `class` [`ModulinoMovement`](#modulinomovement) | Handles the functionality of Modulino Movement,interfacing with the IMU sensor to get acceleration readings. |
-| `class` [`ModulinoThermo`](#modulinothermo) | Handles the functionality of Modulino Thermo, managing temperature sensors to provide real-time temperature and humidity readings.                                |
-| `class` [`ModulinoDistance`](#modulinodistance) | Handles the functionality of Modulino Distance, enabling distance measurement using ToF (Time-of-Flight) sensors for precise range detection. |
+ | Members                         | Descriptions                                                                                                                       |
+ | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+ | `class` [`ATM90E32`](#ATM90E32) | The base class for the MCM Energy Monitor, it provides essential functionality and structure for all subsequent methods. |
+
+### Electrical Parameters Methods
+
+- `GetLineVoltageA()`: Returns the RMS voltage value of channel A 
+- `GetLineVoltageB()`: Returns the RMS voltage value of channel B 
+- `GetLineVoltageC()`: Returns the RMS voltage value of channel C
+
+- `GetLineCurrentA()`: Returns the RMS current value of channel A
+- `GetLineCurrentB()`: Returns the RMS current value of channel B
+- `GetLineCurrentC()`: Returns the RMS current value of channel C
+- `GetLineCurrentN()`: Returns the RMS current value of Neutral
+
+- `GetActivePowerA()`: Returns the Active Power (W) of channel A
+- `GetActivePowerB()`: Returns the Active Power (W) of channel B
+- `GetActivePowerC()`: Returns the Active Power (W) of channel C
+
+- `GetTotalActivePower()`: Returns the Active Power (W) of all channels
+- `GetTotalActiveFundPower()`: Returns the total active fundamental power 
+- `GetTotalActiveHarPower()`: Returns the total active harmonical power
+
+- `GetReactivePowerA()`: Returns the Reactive Power (VAR) of channel A
+- `GetReactivePowerB()`: Returns the Reactive Power (VAR) of channel B
+- `GetReactivePowerC()`: Returns the Reactive Power (VAR) of channel C
+- `GetTotalReactivePower()`: Returns the Reactive Power (VAR) of all channels
+
+- `GetApparentPowerA()`: Returns the Apparent Power (VA) of channel A
+- `GetApparentPowerB()`: Returns the Apparent Power (VA) of channel B
+- `GetApparentPowerC()`: Returns the Apparent Power (VA) of channel C
+- `GetTotalApparentPower()`: Returns the Apparent Power (VA) of all channels
+
+- `GetFrequency()`: Returns the grid frequency (Hz)
+
+- `GetPowerFactorA()`: Returns the Power Factor of channel A
+- `GetPowerFactorB()`: Returns the Power Factor of channel B
+- `GetPowerFactorC()`: Returns the Power Factor of channel C
+- `GetTotalPowerFactor()`: Returns the mean Power Factor of all channels
+
+- `GetPhaseA()`: Returns the Phase Angle of channel A
+- `GetPhaseB()`: Returns the Phase Angle of channel B
+- `GetPhaseC()`: Returns the Phase Angle of channel C
+
+- `GetImportEnergy()`: Returns the active energy imported in (Wh)
+- `GetImportReactiveEnergy()`: Returns the reactive energy imported in (VARh)
+- `GetImportApparentEnergy()`: Returns the apparent energy imported in (VAh)
+- `GetExportEnergy()`: Returns the active energy exported in (Wh)
+- `GetExportReactiveEnergy()`: Returns the reactive energy exported in (VARh)
+
+### Calibration Methods
+
+- `CalculateVIOffset(unsigned short regh_addr, unsigned short regl_addr, unsigned short offset_reg)`: Returns the offset of the voltage and current channels to be used within the `setVIOffset()` function.
+
+This function admits several parameters, see the following example as reference:
+
+```arduino
+void VIoffsetCal()
+{
+  // Voltage Offset Calibration
+  mcm.CalculateVIOffset(UrmsA, UrmsALSB, UoffsetA);
+  mcm.CalculateVIOffset(UrmsB, UrmsBLSB, UoffsetB);
+  mcm.CalculateVIOffset(UrmsC, UrmsCLSB, UoffsetC);
+
+  // Current Offset Calibration
+  mcm.CalculateVIOffset(IrmsA, IrmsALSB, IoffsetA);
+  mcm.CalculateVIOffset(IrmsB, IrmsBLSB, IoffsetB);
+  mcm.CalculateVIOffset(IrmsC, IrmsCLSB, IoffsetC);
+}
+```
+
+The `VIoffsetCal()` function from above will calculate and return the offset of each input channel of the system. Take notes of the results because will be needed for the next method explained.
+
+**Note:** The offset must be calculated without voltage and current input. No grid voltage and no powered loads connected to the CTs.
+
+- `setVIOffset(unsigned short VoffA, unsigned short VoffB, unsigned short VoffC, unsigned short IoffA, unsigned short IoffB, unsigned short IoffC)`: Configures the offset for each channel to compensate the initial error of the ADC input stages. 
+
+This function admits several parameters, see the following example as reference:
+
+```arduino
+mcm.setVIOffset(64608, 64608, 64608, 64606, 64608, 64606); // Values obtained with VIoffsetCal()
+```
+
+**Note:** Enter the offset values in the same order the `VIoffsetCal()` function prints them.
+
+- `CalculatePowerOffset(unsigned short regh_addr, unsigned short regl_addr, unsigned short offset_reg)`: Returns the offset of the power registers. Optional depending on your setup.
+
+- `CalibrateVI(unsigned short reg, float actualVal)`: Returns the calibration factor of your voltage and current readings using a known voltage and current.
+
+This function admits the register to be calibrated and the voltage or current value measured by a reference tool. See the following example for reference:
+
+- I measured a voltage of **121.54 VAC** with my lab multimeter. (The MCM Split-Phase Energy Monitor only uses channels A and C for voltage).
+- I measured a current of **0.4815 Amps** with my lab multimeter. (The MCM Split-Phase Energy Monitor only uses channels A and C for current).
+
+With those known values currently being present in the system input, run the following functions:
+
+```arduino
+  VCalibration(121.54, 0, 121.54); // Voltage in A, Voltage in B, Voltage in C
+
+  ...
+
+  void VCalibration(float VoltA, float VoltB, float VoltC)
+{
+  // Voltage Offset Calibration
+  mcm.CalibrateVI(UrmsA, VoltA); // Voltage Channel A, Actual Reference Voltage
+  mcm.CalibrateVI(UrmsB, VoltB); // Voltage Channel B, Actual Reference Voltage
+  mcm.CalibrateVI(UrmsC, VoltC); // Voltage Channel C, Actual Reference Voltage
+  delay(5000);
+}
+```
+
+```arduino
+  ICalibration(0.4815, 0, 0.4815); // Current in A, Current in B, Current in C
+
+  ...
+
+  void ICalibration(float CurrA, float CurrB, float CurrC)
+{
+  // Voltage Offset Calibration
+  mcm.CalibrateVI(IrmsA, CurrA); // Voltage Channel A, Actual Reference Voltage
+  mcm.CalibrateVI(IrmsB, CurrB); // Voltage Channel B, Actual Reference Voltage
+  mcm.CalibrateVI(IrmsC, CurrC); // Voltage Channel C, Actual Reference Voltage
+  delay(1000);
+}
+```
+  
+The functions from above will print in the Serial Monitor the calibration factors of each channel. Write them down and use them to populate the `begin()` function of the ATM90E32 class as explained in the [beginning](#library-initialization).
+
+

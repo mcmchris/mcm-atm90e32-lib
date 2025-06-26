@@ -176,9 +176,9 @@ double ATM90E32::CalculateVIOffset(unsigned short regh_addr, unsigned short regl
 
   offset = val; // keep lower 16 bits
 
-  CommEnergyIC(WRITE, CfgRegAccEn, 0x55AA); // 7F enable register config access
-  CommEnergyIC(WRITE, offset_reg, offset);
-  CommEnergyIC(WRITE, CfgRegAccEn, 0x0000); // 7F end configuration
+  //CommEnergyIC(WRITE, CfgRegAccEn, 0x55AA); // 7F enable register config access
+  //CommEnergyIC(WRITE, offset_reg, offset);
+  //CommEnergyIC(WRITE, CfgRegAccEn, 0x0000); // 7F end configuration
 
   Serial.print(", Offset: ");
   Serial.println(offset);
@@ -217,9 +217,9 @@ double ATM90E32::CalculatePowerOffset(unsigned short regh_addr, unsigned short r
 
   offset = val; // keep lower 16 bits
 
-  CommEnergyIC(WRITE, CfgRegAccEn, 0x55AA); // 7F enable register config access
-  CommEnergyIC(WRITE, offset_reg, offset);
-  CommEnergyIC(WRITE, CfgRegAccEn, 0x0000); // 7F end configuration
+  //CommEnergyIC(WRITE, CfgRegAccEn, 0x55AA); // 7F enable register config access
+  //CommEnergyIC(WRITE, offset_reg, offset);
+  //CommEnergyIC(WRITE, CfgRegAccEn, 0x0000); // 7F end configuration
 
   Serial.print(", Offset configured:");
   Serial.println(offset);
