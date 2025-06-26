@@ -23,7 +23,7 @@ To initialize the MCM ATM90E32 library, include the header file and call the `be
   - **4x** = 4 (CTs up to 15mA/180mV)
 - **Voltage and current calibration:** The seventh, eighth, ninth and tenth parameters fine tune the voltage and current measurements. These values are obtained with the calibration workflow.
 
-```arduino
+```cpp
 #include <SPI.h>
 #include <MCM_ATM90E32.h>
 
@@ -122,7 +122,7 @@ void setup() {
 
 This function admits several parameters, see the following example as reference:
 
-```arduino
+```cpp
 void VIoffsetCal()
 {
   // Voltage Offset Calibration
@@ -145,7 +145,7 @@ The `VIoffsetCal()` function from above will calculate and return the offset of 
 
 This function admits several parameters, see the following example as reference:
 
-```arduino
+```cpp
 mcm.setVIOffset(64608, 64608, 64608, 64606, 64608, 64606); // Values obtained with VIoffsetCal()
 ```
 
@@ -162,7 +162,7 @@ This function admits the register to be calibrated and the voltage or current va
 
 With those known values currently being present in the system input, run the following functions:
 
-```arduino
+```cpp
   VCalibration(121.54, 0, 121.54); // Voltage in A, Voltage in B, Voltage in C
 
   ...
@@ -177,7 +177,7 @@ With those known values currently being present in the system input, run the fol
 }
 ```
 
-```arduino
+```cpp
   ICalibration(0.4815, 0, 0.4815); // Current in A, Current in B, Current in C
 
   ...
