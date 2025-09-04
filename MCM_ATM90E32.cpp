@@ -176,9 +176,9 @@ double ATM90E32::CalculateVIOffset(unsigned short regh_addr, unsigned short regl
 
   offset = val; // keep lower 16 bits
 
-  //CommEnergyIC(WRITE, CfgRegAccEn, 0x55AA); // 7F enable register config access
-  //CommEnergyIC(WRITE, offset_reg, offset);
-  //CommEnergyIC(WRITE, CfgRegAccEn, 0x0000); // 7F end configuration
+  // CommEnergyIC(WRITE, CfgRegAccEn, 0x55AA); // 7F enable register config access
+  // CommEnergyIC(WRITE, offset_reg, offset);
+  // CommEnergyIC(WRITE, CfgRegAccEn, 0x0000); // 7F end configuration
 
   Serial.print(", Offset: ");
   Serial.println(offset);
@@ -217,9 +217,9 @@ double ATM90E32::CalculatePowerOffset(unsigned short regh_addr, unsigned short r
 
   offset = val; // keep lower 16 bits
 
-  //CommEnergyIC(WRITE, CfgRegAccEn, 0x55AA); // 7F enable register config access
-  //CommEnergyIC(WRITE, offset_reg, offset);
-  //CommEnergyIC(WRITE, CfgRegAccEn, 0x0000); // 7F end configuration
+  // CommEnergyIC(WRITE, CfgRegAccEn, 0x55AA); // 7F enable register config access
+  // CommEnergyIC(WRITE, offset_reg, offset);
+  // CommEnergyIC(WRITE, CfgRegAccEn, 0x0000); // 7F end configuration
 
   Serial.print(", Offset configured:");
   Serial.println(offset);
@@ -610,15 +610,16 @@ bool GainIsValid(int value)
   - Set serialFlag to true for serial debugging
   - Use SPI MODE 0 for the ATM90E32
 */
-void ATM90E32::begin(int pin, unsigned short lineFreq, unsigned short sumMode, unsigned short iagain, unsigned short ibgain, unsigned short icgain, unsigned short ucal, unsigned short icalA, unsigned short icalB, unsigned short icalC)
+void ATM90E32::begin(int pin, unsigned short lineFreq, unsigned short phases, unsigned short sumMode, unsigned short iagain, unsigned short ibgain, unsigned short icgain, unsigned short ucal, unsigned short icalA, unsigned short icalB, unsigned short icalC)
 {
   _cs = pin;            // SS PIN
   _lineFreq = lineFreq; // frequency of grid
+  _phases = phases;     // Split-phase or 3-Phase system
   _sumMode = sumMode;   // addition mode of energy
   _iagain = iagain;     // PGA Gain for current channel A
   _ibgain = ibgain;     // PGA Gain for current channel B
   _icgain = icgain;     // PGA Gain for current channel C
-  _ucal = ucal;         // voltage rms gain
+  _ucal = ucal;         // voltage RMS gain
   _icalA = icalA;       // CT1 for single split phase meter
   _icalB = icalB;       // CT2, not used for single split phase meter
   _icalC = icalC;       // CT3, used as CT2 for single split phase meter
@@ -642,99 +643,103 @@ void ATM90E32::begin(int pin, unsigned short lineFreq, unsigned short sumMode, u
   unsigned short FreqHiThresh;
   unsigned short FreqLoThresh;
 
-  uint16_t config = 0b0000000110011101; // 16-bit unsigned variable
+  // --- config layout (bits) ---
+  // [12]   : line freq (0=50 Hz, 1=60 Hz)
+  // [8]    : phase flag (1=split-phase, 0=3-phase)
+  // [4:3]  : sum mode   (00=arithmetic, 11=absolute)  // per your code
+  // [2:0]  : phase mode (101=split-phase, 111=3-phase)
 
-  if (_lineFreq != 60 && _lineFreq != 50)
+  // --- gain packing in current_gain ---
+  // [1:0] IA, [3:2] IB, [5:4] IC  (00=1x, 01=2x, 10=4x)
+
+  auto gainCode = [](unsigned short g) -> uint8_t
   {
-    Serial.println("Not supported frequency selected");
-    Serial.println("Using default of 50 Hz");
+    // map 1->00, 2->01, 4->10 ; default to 00 if invalid
+    if (g == 1)
+      return 0b00;
+    if (g == 2)
+      return 0b01;
+    if (g == 4)
+      return 0b10;
+    return 0b00;
+  };
 
-    sagV = 190;
-    FreqHiThresh = 51 * 100;
-    FreqLoThresh = 49 * 100;
+  uint16_t config = 0b0000000110011101; // 0x019D
 
-    config |= (0 << 12);
-  }
-  else if (_lineFreq == 50)
-  {
-    sagV = 190;
-    FreqHiThresh = 51 * 100;
-    FreqLoThresh = 49 * 100;
-
-    config |= (0 << 12);
-  }
-  else if (_lineFreq == 60)
+  // ---- LINE FREQ bit12
+  config &= ~(1u << 12);
+  if (_lineFreq == 60)
   {
     sagV = 90;
     FreqHiThresh = 61 * 100;
     FreqLoThresh = 59 * 100;
-
-    config |= (1 << 12);
-  }
-
-  if (_sumMode)
-  {
-    config |= (0b11 << 3);
+    config |= (1u << 12);
   }
   else
-  {
-    config |= (0b00 << 3);
+  { // default 50 Hz for invalid or 50
+    if (_lineFreq != 50)
+    {
+      Serial.println("Not supported frequency selected");
+      Serial.println("Using default of 50 Hz");
+    }
+    sagV = 190;
+    FreqHiThresh = 51 * 100;
+    FreqLoThresh = 49 * 100;
   }
 
+  // ---- SUM MODE bits [4:3]
+  config &= ~(0b11u << 3);
+  config |= ((_sumMode ? 0b11u : 0b00u) << 3);
+
+  // Compute sag threshold (unchanged math)
   vSagTh = (sagV * 100 * sqrt(2)) / (2 * _ucal / 32768);
 
-  uint8_t current_gain = 0b000000; // 16-bit unsigned variable
+  // ---- CURRENT GAINS packed into current_gain
+  uint8_t current_gain = 0;
+  uint8_t ia = gainCode(_iagain);
+  uint8_t ib = gainCode(_ibgain);
+  uint8_t ic = gainCode(_icgain);
 
-  if (GainIsValid(_iagain))
-  {
-    if (_iagain == 4)
-    {
-      current_gain |= (_iagain - 2 << 0);
-    }
-    else
-    {
-      current_gain |= (_iagain - 1 << 0);
-    }
-  }
-  else
-  {
+  if (ia == 0b00 && _iagain != 1)
     Serial.println("IA gain is not valid, using default 1x");
-    current_gain |= (0 << 0);
-  }
-
-  if (GainIsValid(_ibgain))
-  {
-    if (_ibgain == 4)
-    {
-      current_gain |= (_ibgain - 2 << 2);
-    }
-    else
-    {
-      current_gain |= (_ibgain - 1 << 2);
-    }
-  }
-  else
-  {
+  if (ib == 0b00 && _ibgain != 1)
     Serial.println("IB gain is not valid, using default 1x");
-    current_gain |= (0 << 2);
-  }
+  if (ic == 0b00 && _icgain != 1)
+    Serial.println("IC gain is not valid, using default 1x");
 
-  if (GainIsValid(_icgain))
+  // place IA at [1:0], IB at [3:2], IC at [5:4]
+  current_gain |= (ia << 0);
+  current_gain |= (ib << 2);
+  current_gain |= (ic << 4);
+
+  // ---- PHASE MODE: bits [2:0] and bit8 flag
+  config &= ~0b111u;    // clear bits 2..0
+  config &= ~(1u << 8); // clear bit 8 first
+
+  if (_phases == 2)
   {
-    if (_icgain == 4)
-    {
-      current_gain |= (_icgain - 2 << 4);
-    }
-    else
-    {
-      current_gain |= (_icgain - 1 << 4);
-    }
+    Serial.println("Split-Phase Mode");
+    config |= 0b101u;    // bits 2..0
+    config |= (1u << 8); // bit8 = 1 for split-phase
+  }
+  else if (_phases == 3)
+  {
+    Serial.println("3-Phase Mode");
+    config |= 0b111u; // bits 2..0
+    // bit8 remains 0 for 3-phase
   }
   else
   {
-    Serial.println("IC gain is not valid, using default 1x");
-    current_gain |= (0 << 4);
+    Serial.println("IC phase mode out of range, using default Split-phase");
+    config |= 0b101u;
+    config |= (1u << 8);
   }
+
+  // --- print as 16 bits with leading zeros
+  Serial.print("MMODE: ");
+  for (int i = 15; i >= 0; --i)
+    Serial.print((config >> i) & 1);
+  Serial.println();
 
   // Initialize registers
   CommEnergyIC(WRITE, SoftReset, 0x789A);   // 70 Perform soft reset

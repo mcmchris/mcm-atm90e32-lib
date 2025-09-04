@@ -246,6 +246,7 @@ class ATM90E32
 		unsigned short CommEnergyIC(unsigned char RW, unsigned short address, unsigned short val);
 		int _cs;
 		unsigned short _lineFreq;
+		unsigned short _phases;
 		unsigned short _sumMode;
 		unsigned short _iagain;
 		unsigned short _ibgain;
@@ -264,7 +265,7 @@ class ATM90E32
 		~ATM90E32(void);
 
 		/* Initialization Functions */	
-		void begin(int pin, unsigned short lineFreq, unsigned short sumMode, unsigned short iagain, unsigned short ibgain, unsigned short icgain, unsigned short ucal, unsigned short icalA, unsigned short icalB, unsigned short icalC);
+		void begin(int pin, unsigned short lineFreq, unsigned short phases, unsigned short sumMode, unsigned short iagain, unsigned short ibgain, unsigned short icgain, unsigned short ucal, unsigned short icalA, unsigned short icalB, unsigned short icalC);
 		
 		double CalculateVIOffset(unsigned short regh_addr, unsigned short regl_addr, unsigned short offset_reg);
 		double CalculatePowerOffset(unsigned short regh_addr, unsigned short regl_addr, unsigned short offset_reg);
